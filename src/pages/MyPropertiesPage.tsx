@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { propertiesApi } from '../api/properties';
 import { PropertyCard } from '../components/PropertyCard';
+import { PropertyGridSkeleton } from '../components/PropertyGridSkeleton';
 import { getErrorMessage } from '../context/AuthContext';
 import type { Property } from '../types';
 
@@ -40,32 +41,43 @@ export function MyPropertiesPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>My Properties</h1>
+        <div>
+          <h1>My Properties</h1>
+          <p>Manage your listings and track enquiries</p>
+        </div>
         <Link to="/add-property" className="btn btn-primary">
-          Add new
+          + Add listing
         </Link>
       </div>
 
       {error && <p className="error">{error}</p>}
-      {loading && <p className="loading">Loading...</p>}
+      {loading && <PropertyGridSkeleton count={3} />}
 
       {!loading && properties.length === 0 && (
-        <p className="empty">
-          You have no listings yet.{' '}
-          <Link to="/add-property">Add your first property</Link>
-        </p>
+        <div className="empty-state">
+          <span className="empty-state-icon" aria-hidden="true">
+            +
+          </span>
+          <h2>No listings yet</h2>
+          <p>Create your first property listing to reach home seekers.</p>
+          <Link to="/add-property" className="btn btn-primary">
+            Add your first property
+          </Link>
+        </div>
       )}
 
-      <div className="property-grid">
-        {properties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            showActions
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {!loading && properties.length > 0 && (
+        <div className="property-grid">
+          {properties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              property={property}
+              showActions
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

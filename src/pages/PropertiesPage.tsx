@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { propertiesApi } from '../api/properties';
 import { PropertyCard } from '../components/PropertyCard';
 import { PropertyFiltersBar } from '../components/PropertyFilters';
+import { PropertyGridSkeleton } from '../components/PropertyGridSkeleton';
 import { getErrorMessage } from '../context/AuthContext';
 import type { Property, PropertyFilters } from '../types';
 
@@ -29,30 +30,53 @@ export function PropertiesPage() {
   }, [load]);
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1>Property Listings</h1>
-        <p>Search by location, BHK, and price range</p>
-      </div>
+    <div className="page listings-page">
+      <section className="page-hero">
+        <div className="page-hero-content">
+          <p className="page-hero-eyebrow">Verified listings</p>
+          <h1>Discover your next home</h1>
+          <p className="page-hero-subtitle">
+            Browse properties across India. Filter by location, configuration,
+            and budget to find the right match.
+          </p>
+        </div>
+      </section>
 
       <PropertyFiltersBar
         filters={filters}
         onChange={setFilters}
-        onSubmit={() => load(filters)}
+        onSubmit={(active) => load(active ?? filters)}
       />
 
       {error && <p className="error">{error}</p>}
-      {loading && <p className="loading">Loading properties...</p>}
 
-      {!loading && !error && properties.length === 0 && (
-        <p className="empty">No properties found. Try adjusting your filters.</p>
+      {!loading && !error && (
+        <p className="results-count" aria-live="polite">
+          {properties.length === 0
+            ? 'No properties match your search'
+            : `${properties.length} propert${properties.length === 1 ? 'y' : 'ies'} found`}
+        </p>
       )}
 
-      <div className="property-grid">
-        {properties.map((property) => (
-          <PropertyCard key={property.id} property={property} />
-        ))}
-      </div>
+      {loading && <PropertyGridSkeleton />}
+
+      {!loading && !error && properties.length === 0 && (
+        <div className="empty-state">
+          <span className="empty-state-icon" aria-hidden="true">
+            ⌂
+          </span>
+          <h2>No properties found</h2>
+          <p>Try adjusting your filters or search in a different location.</p>
+        </div>
+      )}
+
+      {!loading && properties.length > 0 && (
+        <div className="property-grid">
+          {properties.map((property) => (
+            <PropertyCard key={property.id} property={property} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
